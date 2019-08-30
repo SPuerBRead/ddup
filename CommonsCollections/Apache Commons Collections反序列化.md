@@ -420,7 +420,7 @@ clazz.addConstructor(ctConstructor);
         nameField.set(templates, "aaaa");
         clazz.writeFile();
         return templates;
-}
+   }
     ```
 
     yso生成的class如下,对应的payload有3,154 字节
