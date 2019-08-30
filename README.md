@@ -3,5 +3,5 @@
 
 
 
-- [Apache Commons Collections反序列化](https://github.com/SPuerBRead/ddup/CommonsCollections/)
+- [Apache Commons Collections反序列化](https://github.com/SPuerBRead/ddup/tree/master/CommonsCollections)
 
