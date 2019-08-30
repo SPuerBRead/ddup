@@ -399,6 +399,7 @@ clazz.addConstructor(ctConstructor);
 3. StubTransletPayload类，其实StubTransletPayload只需要表面继承自AbstractTranslet类即可，不添加两个transform方法，也不实现Serializable接口，同样也是可以触发漏洞的，可以通过javassist直接创建类，然后设置父类，加入恶意代码的方式完成
 
     可以对生成class精简一下
+    
     ```
     private static Object CreateTemplate() throws IllegalAccessException, InstantiationException, NotFoundException, CannotCompileException, IOException, NoSuchFieldException {
         TemplatesImpl templates = TemplatesImpl.class.newInstance();
@@ -423,6 +424,7 @@ clazz.addConstructor(ctConstructor);
     ```
 
     yso生成的class如下,对应的payload有3,154 字节
+    
 
     ```
     //
@@ -456,7 +458,9 @@ clazz.addConstructor(ctConstructor);
     }
     ```
     
+    
     修改后生成的class如下，对应的payload有1,446 字节，如果将恶意代码插入到无参构造函数中只有1,356 字节会比静态代码块要小一些
+    
     
     ```
     import com.sun.org.apache.xalan.internal.xsltc.runtime.AbstractTranslet;
@@ -471,7 +475,8 @@ clazz.addConstructor(ctConstructor);
         }
     }
     ```
-    
+  
+  
 ### CommonsCollections3
 
 在知道CommonsCollections1和CommonsCollections2之后，CommonsCollections3就很简单了触发transform的方法仍然是使用AnnotationInvocationHandler+LazyMap，TemplatesImpl存储要执行的命令，但是transformerChain和之前不同
