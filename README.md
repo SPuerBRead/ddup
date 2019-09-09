@@ -1,6 +1,5 @@
 # ddup
-一些学习笔记  Good Good Study Day Day Up !
-
+一些学习笔记  Good Good Study Day Day Up ! （测试代码都在code目录下）
 
 
 - [CommonsCollections系列gadgets分析](https://github.com/SPuerBRead/ddup/blob/master/CommonsCollections%E7%B3%BB%E5%88%97gadgets%E5%88%86%E6%9E%90/CommonsCollections%E7%B3%BB%E5%88%97gadgets%E5%88%86%E6%9E%90.md)
