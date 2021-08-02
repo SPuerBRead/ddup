@@ -12,12 +12,6 @@ centos 8.4.2105
 systemctl stop firewalld
 ```
 
-### 设置iptables不处理bridge的数据
-
-```bash
-echo 1 > /proc/sys/net/bridge/bridge-nf-call-iptables
-```
-
 ### 关闭swap
 
 ```bash
@@ -59,6 +53,12 @@ sudo sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
 sudo yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
 
 sudo systemctl enable --now kubelet
+```
+
+### 设置iptables不处理bridge的数据
+
+```bash
+echo 1 > /proc/sys/net/bridge/bridge-nf-call-iptables
 ```
 
 ### 下载coredns镜像
