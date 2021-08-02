@@ -64,7 +64,7 @@ echo 1 > /proc/sys/net/bridge/bridge-nf-call-iptables
 ### 下载coredns镜像
 
 ```bash
-docker pull docker pull coredns/coredns:1.8.0
+docker pull coredns/coredns:1.8.0
 ```
 
 ### 下载其他镜像
