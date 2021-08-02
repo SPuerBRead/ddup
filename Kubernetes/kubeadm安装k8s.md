@@ -121,6 +121,14 @@ kubectl get nodes
 
 复制master节点init命令输出的join命令到node执行，让node加入集群
 
+如果用的虚拟机，两个机器主机名相同，修改node机器主机名
+
+```bash
+hostnamectl set-hostname node1
+```
+
+加入集群
+
 ```bash
 kubeadm join 192.168.209.141:6443 --token XXX --discovery-token-ca-cert-hash sha256:XXX  --node-name node1
 ```
