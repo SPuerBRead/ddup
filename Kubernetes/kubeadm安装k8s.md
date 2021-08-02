@@ -73,7 +73,17 @@ docker pull coredns/coredns:1.8.0
 kubeadm config images pull --image-repository=registry.aliyuncs.com/google_containers
 ```
 
+
+
 ### 修改镜像tag和kubeadm指定的镜像tag一致
+
+按照自己的版本修改，查看kubeadm指定的镜像
+
+```bash
+kubeadm config images list
+```
+
+修改命令
 
 ```bash
 docker tag registry.aliyuncs.com/google_containers/kube-proxy:v1.21.2 k8s.gcr.io/kube-proxy:v1.21.2
@@ -83,12 +93,6 @@ docker tag registry.aliyuncs.com/google_containers/kube-scheduler:v1.21.2 k8s.gc
 docker tag registry.aliyuncs.com/google_containers/etcd:3.4.13-0 k8s.gcr.io/etcd:3.4.13-0
 docker tag coredns/coredns:1.8.0 k8s.gcr.io/coredns/coredns:v1.8.0
 docker tag registry.aliyuncs.com/google_containers/pause:3.4.1 k8s.gcr.io/pause:3.4.1
-```
-
-按照自己的版本修改，查看kubeadm指定的镜像
-
-```bash
-kubeadm config images list
 ```
 
 ### 启动master节点
