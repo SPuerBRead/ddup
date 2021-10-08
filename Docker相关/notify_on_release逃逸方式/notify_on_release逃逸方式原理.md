@@ -39,7 +39,7 @@ sh -c "echo \$\$ > /tmp/cgrp/x/cgroup.procs"
   
 ## 利用原理
   通过对这几个文件的理解，基本可以理清利用原理
-1. 需要一个可写的cgroup,直接把root cgroup的notify_on_release设置成1显然是不合理的，因为最后一步还需要移除cgroup下的所有进程，所以创建一个子cgroup然后将子cgroup的notify_on_release置为1就不会对原有设置产生影响
+1. 需要一个可写的cgroup,至于用cgroup的哪个子系统也就是-o参数应该是都可以的，直接把root cgroup的notify_on_release设置成1显然是不合理的，因为最后一步还需要移除cgroup下的所有进程，所以创建一个子cgroup然后将子cgroup的notify_on_release置为1就不会对原有设置产生影响
   
 2. 需要控制一个文件，这个文件有两个特点：
    * 知道这个文件在宿主机路径
