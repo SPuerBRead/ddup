@@ -38,14 +38,14 @@ sh -c "echo \$\$ > /tmp/cgrp/x/cgroup.procs"
   指明release_agent文件内容应该指定一个可执行文件路径名。这个路径名是宿主机的路径名也就是文件的真实路径，不是在容器中看到的路径，通常用于自动化卸载无用的cgroup。并且整个文件只能存在于root cgroup，如果在下层创建release_agent文件会提示Permission denied无法创建
   
 ## 利用原理
-  通过对这几个文件的理解，基本可以理清利用原理，
+  通过对这几个文件的理解，基本可以理清利用原理
 1. 需要一个可写的cgroup,直接把root cgroup的notify_on_release设置成1显然是不合理的，因为最后一步还需要移除cgroup下的所有进程，所以创建一个子cgroup然后将子cgroup的notify_on_release置为1就不会对原有设置产生影响
   
 2. 需要控制一个文件，这个文件有两个特点：
    * 知道这个文件在宿主机路径
    * 在容器中可以修改这个文件内容和执行权限
   
-   如果能够知道容器在宿主机上真实路径就可以满足这一要求，在容器写任意一个文件然后拼接容器的真实路径即可，exp中通过读mtab的方式获取真实路径，这个正则是在docker使用overlay方式作为存储驱动时才可以使用，除了overlay方式外还有devicemapper、vfs等，每种存储方式获取真实路径的方式并不相同，以devicemapper为例读取mtab看到的/dev/mapper/下的路径而非在真实访问用的路径但还是可以通过他构造在宿主机上的路径，devicemapper在宿主机上的目录默认是/var/lib/docker/devicemapper/mnt/<id>/rootfs，通过`sed -n 's/\/dev\/mapper\/docker\-[0-9]*:[0-9]*\-[0-9]*\-\(.*\) \/\(.*\)/\1/p' /etc/mtab`可以获取到对应的id值，最终host_path为:
+   如果能够知道容器在宿主机上真实路径就可以满足这一要求，在容器写任意一个文件然后拼接容器的真实路径即可，exp中通过读mtab的方式获取真实路径，这个正则是在docker使用overlay方式作为存储驱动时才可以使用，除了overlay方式外还有devicemapper、vfs等，每种存储方式获取真实路径的方式并不相同，以devicemapper为例读取mtab看到的/dev/mapper/下的路径而非在真实访问用的路径但还是可以通过他构造在宿主机上的路径，devicemapper在宿主机上的目录默认是/var/lib/docker/devicemapper/mnt/[id]/rootfs，通过`sed -n 's/\/dev\/mapper\/docker\-[0-9]*:[0-9]*\-[0-9]*\-\(.*\) \/\(.*\)/\1/p' /etc/mtab`可以获取到对应的id值，最终host_path为:
      ```
    host_path='/var/lib/docker/devicemapper/mnt/'`sed -n 's/\/dev\/mapper\/docker\-[0-9]*:[0-9]*\-[0-9]*\-\(.*\) \/\(.*\)/\1/p' /etc/mtab`'/rootfs'
     ```
