@@ -44,15 +44,37 @@ sh -c "echo \$\$ > /tmp/cgrp/x/cgroup.procs"
 2. 需要控制一个文件，这个文件有两个特点：
    * 知道这个文件在宿主机路径
    * 在容器中可以修改这个文件内容和执行权限
-    
-   
-   如果能够知道容器在宿主机上真实路径就可以满足这一要求，在容器写任意一个文件然后拼接容器的真实路径即可，exp中通过读mtab的方式获取真实路径，这个正则是在docker使用overlay方式作为存储驱动时才可以使用，除了overlay方式外还有devicemapper、vfs等，每种存储方式获取真实路径的方式并不相同，以devicemapper为例读取mtab看到的/dev/mapper/下的路径而非在真实访问用的路径但还是可以通过他构造在宿主机上的路径，devicemapper在宿主机上的目录默认是/var/lib/docker/devicemapper/mnt/[id]/rootfs，通过`sed -n 's/\/dev\/mapper\/docker\-[0-9]*:[0-9]*\-[0-9]*\-\(.*\) \/\(.*\)/\1/p' /etc/mtab`可以获取到对应的id值，最终host_path为:
-     ```
-   host_path='/var/lib/docker/devicemapper/mnt/'`sed -n 's/\/dev\/mapper\/docker\-[0-9]*:[0-9]*\-[0-9]*\-\(.*\) \/\(.*\)/\1/p' /etc/mtab`'/rootfs'
-    ```
   
-3. 清空子cgroup下的cgroup.procs中的所有进程，触发release_agent执行写入的命令，这里有一个问题，cgroup.procs看起来和tasks貌似区别不大，可以简单理解成cgroup.procs是进程级别的管理，tasks是线程级别的管理，在实际测试中，修改`sh -c "echo \$\$ > /tmp/cgrp/x/cgroup.procs"`为`sh -c "echo \$\$ > /tmp/cgrp/x/tasks"`也是同样会触发release_agent的
+   如果能够知道容器在宿主机上真实路径就可以满足这一要求，在容器写任意一个文件然后拼接容器的真实路径即可，exp中通过读mtab的方式获取真实路径，这个正则是在docker使用overlay方式作为存储驱动时才可以使用，除了overlay方式外还有devicemapper、vfs等，每种存储方式获取真实路径的方式并不相同，以下针对每种不同的存储驱动的真实位置给出分析
+   ### device mapper存储驱动获取真实路径
+   device mapper场景读取/etc/mtab看到的/dev/mapper/下的路径而非在真实访问用的路径但还是可以通过他构造在宿主机上的路径，devicemapper在宿主机上的目录默认是/var/lib/docker/devicemapper/mnt/[id]/rootfs，通过`sed -n 's/\/dev\/mapper\/docker\-[0-9]*:[0-9]*\-[0-9]*\-\(.*\) \/\(.*\)/\1/p' /etc/mtab`可以获取到对应的id值，最终host_path为:
 
+    ```shell
+    host_path='/var/lib/docker/devicemapper/mnt/'`sed -n 's/\/dev\/mapper\/docker\-[0-9]*:[0-9]*\-[0-9]*\-\(.*\) \/\(.*\)/\1/p' /etc/mtab`'/rootfs'
+    ```
+    ### aufs存储驱动获取真实路径
+    aufs场景下在mtab下记录的挂载信息很少，需要在/sys/fs/aufs/si_[id]目录下查看aufs的mount的情况来拼凑真实路径
+    ![](media/16330951806464/16342822281543.jpg)
+    那么容器对应在宿主机上的真实路径为
+    `/var/lib/docker/aufs/mnt/a6a473a3a20259ac816466fc42e0903e0cf3333b14e2a05e3b48d459aec14349`
+    如果想要实际测试，需要看下哪些发行版默认是支持aufs的，默认centos不支持aufs存储驱动，需要安装下支持aufs的内核，以centos8为例
+    ```shell
+    wget https://yum.spaceduck.org/kernel-ml-aufs/8/x86_64/kernel-ml-aufs-core-5.14.9-1.el8.x86_64.rpm
+    wget https://yum.spaceduck.org/kernel-ml-aufs/8/x86_64/kernel-ml-aufs-modules-5.14.9-1.el8.x86_64.rpm
+    wget https://yum.spaceduck.org/kernel-ml-aufs/8/x86_64/kernel-ml-aufs-5.14.9-1.el8.x86_64.rpm
+    rpm -iv kernel-ml-aufs-core-5.14.9-1.el8.x86_64.rpm 
+    rpm -iv kernel-ml-aufs-modules-5.14.9-1.el8.x86_64.rpm 
+    rpm -iv kernel-ml-aufs-5.14.9-1.el8.x86_64.rpm 
+    ```
+    重启系统选择AlmaLinux进去再设置daemon.json即可
+    ### btrfs存储驱动获取真实路径
+    btrfs场景获取真实路径的方式很简单，读取/etc/mtab
+    ![](media/16330951806464/16342824449827.jpg)
+    取btrfs的subvol部分加上默认的路径即可，最终路径为
+    `/var/lib/docker/btrfs/subvolumes/5a0307fd430e8a74a7bcc9d3d8ffa150084cb896c817c65e375ff63f2830bd5f`
+    如果想要实际测试，在虚拟机安装完系统之后对磁盘扩容，创建新的分区如/dev/sda3，然后将磁盘设置为btrfs文件系统挂载到/var/lib/docker下，设置daemon.json文件即可
+3. 清空子cgroup下的cgroup.procs中的所有进程，触发release_agent执行写入的命令，这里有一个问题，cgroup.procs看起来和tasks貌似区别不大，可以简单理解成cgroup.procs是进程级别的管理，tasks是进程级别的管理，在实际测试中，修改`sh -c "echo \$\$ > /tmp/cgrp/x/cgroup.procs"`为`sh -c "echo \$\$ > /tmp/cgrp/x/tasks"`也是同样会触发release_agent的
+  
 ## 用处不大的tips
   除了找到容器在宿主机的真实路径外，也是有其他方式的，只满足上面这两个条件很容易可以想到挂载目录，如果以以下方式启动docker
   `docker run -it --cap-add='SYS_ADMIN' -v /tmp:/tmp/host_tmp centos bash`
