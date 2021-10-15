@@ -74,6 +74,8 @@ sh -c "echo \$\$ > /tmp/cgrp/x/cgroup.procs"
     `/var/lib/docker/btrfs/subvolumes/5a0307fd430e8a74a7bcc9d3d8ffa150084cb896c817c65e375ff63f2830bd5f`
     如果想要实际测试，在虚拟机安装完系统之后对磁盘扩容，创建新的分区如/dev/sda3，然后将磁盘设置为btrfs文件系统挂载到/var/lib/docker下，设置daemon.json文件即可
     
+    centos下docker设置btrfs存储驱动的步骤参考：[docker设置btrfs存储驱动](https://github.com/SPuerBRead/ddup/blob/master/Docker%E7%9B%B8%E5%85%B3/docker%E8%AE%BE%E7%BD%AEbtrfs%E5%AD%98%E5%82%A8%E9%A9%B1%E5%8A%A8/docker%E8%AE%BE%E7%BD%AEbtrfs%E5%AD%98%E5%82%A8%E9%A9%B1%E5%8A%A8.md)
+    
     ### vfs存储驱动获取容器所在宿主机路径
     vfs场景在`/proc/1/mountinfo`或者`/proc/1/task/1/mountinfo`文件中都可以获取到在宿主机上的路径，如下图所示
     ![](media/16330951806464/16342937357212.jpg)
