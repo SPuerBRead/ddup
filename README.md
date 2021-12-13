@@ -7,4 +7,5 @@
 - [JNDI注入分析](https://github.com/SPuerBRead/ddup/blob/master/JNDI%E6%B3%A8%E5%85%A5%E5%88%86%E6%9E%90/JNDI%E6%B3%A8%E5%85%A5%E5%88%86%E6%9E%90.md)
 - [Kubernetes相关](https://github.com/SPuerBRead/ddup/blob/master/Kubernetes)
 - [Docker相关](https://github.com/SPuerBRead/ddup/tree/master/Docker相关)
+- [Log4j2 JNDI注入](https://github.com/SPuerBRead/ddup/blob/master/Log4j2/Log4j2%20JNDI%E6%B3%A8%E5%85%A5%E5%88%86%E6%9E%90.md)
 
