@@ -38,7 +38,7 @@ logIfEnabled:1983, AbstractLogger (org.apache.logging.log4j.spi)
 error:740, AbstractLogger (org.apache.logging.log4j.spi)
 main:9, Test
 ```
-`toSerializable:345, PatternLayout$PatternSerializer`之前的调用栈不怎么需要关注，在PatternLayout中，toSerializable函数会调用各个Converter对event进行处理（og4j2对每条日志通过MessageFactory创建message对象，然后创建event将message加入其中对event进行异步处理）
+`toSerializable:345, PatternLayout$PatternSerializer`之前的调用栈不怎么需要关注，在PatternLayout中，toSerializable函数会调用各个Converter对event进行处理（log4j2对每条日志通过MessageFactory创建message对象，然后创建event将message加入其中对event进行异步处理）
 ![](media/16393044809899/16393650967152.jpg)
 `MessagePatternConverter`类的format方法会根据是否开始了lookup功能对日志内容进行lookup操作（[Log4j - Log4j 2 Lookups](https://logging.apache.org/log4j/2.x/manual/lookups.html)）
 首先会判断是否开始lookup功能，如果开启了lookup功能format函数会开始获取日志内容中被${}包含的内容认为是需要进行lookup动作的变量，进入replace流程，对变量进行替换
@@ -46,7 +46,7 @@ main:9, Test
 
 在`StrSubstitutor`类的substitute方法，调用resolveVariable开始对变量进行处理
 ![](media/16393044809899/16393665967889.jpg)
-在Interpolator类中lookup方法会根据冒号拆分输入进来的变量获取prefix也就是需要什么类型的lookup，然后从strLookupMap中根据字符串获取对应lookup类的对象，所有类型的lookup会被预先加载到这个map当中，这里获取到JndiLookup的对象然后调用其lookup方法
+在Interpolator类中lookup方法会根据冒号拆分输入进来的变量获取prefix也就是需要什么类型的lookup，然后从strLookupMap中根据字符串获取对应lookup类的对象，所有类型的lookup会被预先加载到这个map当中，这里获取到jndiLookup的对象然后调用其lookup方法
 ![](media/16393044809899/16393683297146.jpg)
 lookup方法最终调用jndiManager的lookup函数触发漏洞
 ![](media/16393044809899/16393688340997.jpg)
@@ -80,7 +80,7 @@ logger.error("${jndi:ldap://127.0.0.1:1111/Exp1}");
 ### 2.15.0-rc1
 在2.15.0的代码中，lookup默认是关闭的，开启需要在配置文件的pattern中指明%msg{lookups}%n开启lookup功能
 
-在JndiManager这个类的lookup增加了白名单功能限制协议头和请求地址，默认的协议头支持java、ldap、ldaps，默认的地址只支持本地地址，但实际实现有明显瑕疵，处理UR如果异常就可以直接触发漏洞了
+在JndiManager这个类的lookup增加了白名单功能限制协议头和请求地址，默认的协议头支持java、ldap、ldaps，默认的地址只支持本地地址，但实际实现有明显瑕疵，处理URI如果异常就可以直接触发漏洞了
 
 ### 2.15.0-rc2
 处理URI白名单补充了异常退出，捕获异常后不进入lookup流程
