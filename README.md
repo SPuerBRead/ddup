@@ -8,4 +8,5 @@
 - [Kubernetes相关](https://github.com/SPuerBRead/ddup/blob/master/Kubernetes)
 - [Docker相关](https://github.com/SPuerBRead/ddup/tree/master/Docker相关)
 - [Log4j2 JNDI注入](https://github.com/SPuerBRead/ddup/blob/master/Log4j2/Log4j2%20JNDI%E6%B3%A8%E5%85%A5%E5%88%86%E6%9E%90.md)
+- [Spring遇到的一些问题记录](https://github.com/SPuerBRead/ddup/tree/master/Spring%E9%81%87%E5%88%B0%E7%9A%84%E4%B8%80%E4%BA%9B%E9%97%AE%E9%A2%98%E8%AE%B0%E5%BD%95)
 
