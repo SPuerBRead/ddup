@@ -1,7 +1,7 @@
 # Log4j2 JNDI注入分析
 
-
 ## 漏洞触发流程
+
 漏洞触发过程的调用栈如下：
 ```
 lookup:172, JndiManager (org.apache.logging.log4j.core.net)
