@@ -238,5 +238,7 @@ echo ":exp:M:240:\x70\xff\x01\x00::$host_path/tmp/handler.sh:" > /tmp/binfmt_mis
     命令正常被执行
     
 ### 参考文档
-1. [sysctl-kernel](https://www.kernel.org/doc/html/latest/admin-guide/sysctl/kernel.html)    
-2. [Linux Kernel Exploitation Technique: Overwriting modprobe_path](https://lkmidas.github.io/posts/20210223-linux-kernel-pwn-modprobe/)
+
+1. [Container escape in 2021](https://github.com/knownsec/KCon/blob/master/2021/Container%20escape%20in%202021.pdf)
+2. [sysctl-kernel](https://www.kernel.org/doc/html/latest/admin-guide/sysctl/kernel.html)    
+3. [Linux Kernel Exploitation Technique: Overwriting modprobe_path](https://lkmidas.github.io/posts/20210223-linux-kernel-pwn-modprobe/)
