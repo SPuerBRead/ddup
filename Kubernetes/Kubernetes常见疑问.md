@@ -33,15 +33,19 @@ A应用为数据库服务，存储的数据必须在替换前后保持完全一�
 可以简单理解为，Kubernetes负责容器的调度，就需要对接各种容器运行时，市面上非常多的容器运行时，比如docker、kata、gVisor为了方便对接，减少工作量就定义了CRI接口，满足CRI的容器运行时就可以直接接入Kubernetes，但是前期为了能够对docker开箱即用，所以单独实现了dockershim对接docker，容器运行时本身有很多产品，所以为了规范容器运行时需要包含哪些功能做哪些操作就有了OCI标准
 
 * docker自身容器启动流程
+
     `dockerd(Docker Daemon) -> containerd -> containerd-shim -> runc`
 
 * Kubernetes < 1.24
+
     `kubelet -> dockershim(kubelet 内置) -> dockerd -> containerd -> containerd-shim -> runc`
 
 * containerd 1.0取代了dockershim和dockerd，此时的containerd还没有实现Kubernetes CRI，所以出现了CRI-Containerd去进行适配
+
     `kubelet -> CRI-Containerd -> containerd -> containerd-shim -> runc`
 
 * containerd 1.1 containerd以CRI plugin插件形式支持了Kubernetes CRI，去除掉了CRI-Containerd
+
     `kubelet -> containerd(CRI plugin) -> containerd-shim -> runc`
 
 
