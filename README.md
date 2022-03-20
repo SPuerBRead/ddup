@@ -7,6 +7,7 @@
 - [JNDI注入分析](https://github.com/SPuerBRead/ddup/blob/master/JNDI%E6%B3%A8%E5%85%A5%E5%88%86%E6%9E%90/JNDI%E6%B3%A8%E5%85%A5%E5%88%86%E6%9E%90.md)
 - [Kubernetes相关](https://github.com/SPuerBRead/ddup/blob/master/Kubernetes)
   - [kubeadm安装k8s](https://github.com/SPuerBRead/ddup/blob/master/Kubernetes/kubeadm安装k8s.md)
+  - [Kubernetes常见疑问](https://github.com/SPuerBRead/ddup/blob/master/Kubernetes/Kubernetes%E5%B8%B8%E8%A7%81%E7%96%91%E9%97%AE.md)
 - [Docker相关](https://github.com/SPuerBRead/ddup/tree/master/Docker相关)
   - [docker设置btrfs存储驱动](https://github.com/SPuerBRead/ddup/tree/master/Docker相关/docker设置btrfs存储驱动)
   - [notify_on_release逃逸方式](https://github.com/SPuerBRead/ddup/tree/master/Docker相关/notify_on_release逃逸方式)
