@@ -7,7 +7,7 @@
 
 2、一个服务多个相同容器组成进行负载，这些容器之间是什么概念
 
-可以理解成一个Deployment Controller，简单看Kubernetes通过Deployment Controller管理Pod（实际还有ReplicaSet Controller在中间），Deployment的replicas参数设置一个服务有多少个Pod，Controller类型很多，Deployment是Kubernetes Controller的最为常见一种
+    这些容器是一组相同的pod，Kubernetes通过Deployment Controller管理Pod（实际还有ReplicaSet Controller在中间），Deployment的replicas参数设置需要多少个Pod，Controller类型很多，Deployment是Kubernetes Controller的最为常见一种
 
 3、有状态应容器和无状态容器的理解
 
