@@ -1,6 +1,6 @@
 
 ## RBAC策略层面
-1.   在命名空间级别分配权限，授予用户在特定命名空间中的权限时使用RoleBinding而不是ClusterRoleBinding
+1.   在命名空间级别分配权限，授予用户在特定命名空间中的权限时使用`RoleBinding`而不是`ClusterRoleBinding`
 2.   避免通过通配符设置权限，尤其是对所有资源的权限，因此通过通配符来授予访问权限不仅会授予集群中当前的所有对象类型， 还包含所有未来被创建的所有对象类型
 3.   不应使用 `cluster-admin` 角色，除非特别需要。为低特权帐户提供 [伪装权限](https://kubernetes.io/zh-cn/docs/reference/access-authn-authz/authentication/#user-impersonation) 可以避免意外修改集群资源
 4.   非特殊情况不能将用户添加到 `system:masters` 组，`system:masters` 组任何属于此组成员的用户都会绕过所有 RBAC 权限检查，无法通过RABC策略变更这个组的权限
